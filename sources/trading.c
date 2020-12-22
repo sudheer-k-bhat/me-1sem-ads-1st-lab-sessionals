@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "trading.h"
@@ -42,6 +43,7 @@ Trading *trading_sell(Trading *trading, uint32_t quantity, TransactionResult *re
             {
                 stock->quantity -= quantity;
             }
+            result->status = TXN_OK;
 
             //Assuming same date & price for simplicity
             Transaction txn = {stock->shareName, stock->date, stock->price, quantity, TXN_SELL};
