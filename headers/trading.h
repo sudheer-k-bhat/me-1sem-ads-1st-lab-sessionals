@@ -1,8 +1,8 @@
 #ifndef TRADING_H
 #define TRADING_H
 #include <stdint.h>
-#include "../../sandbox/linear-ds/adaptive-queue/headers/queue.h"
-#include "../../sandbox/linear-ds/linked-list/headers/slist.h"
+#include "queue.h"
+#include "slist.h"
 
 #define MAX_COMPANY_TYPES 5
 
@@ -27,7 +27,8 @@ typedef struct {
 
 typedef enum {
     TXN_BUY,
-    TXN_SELL
+    TXN_SELL,
+    TXN_TOPUP
 }TransactionType;
 
 typedef struct{
