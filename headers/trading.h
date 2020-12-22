@@ -17,6 +17,7 @@ typedef enum {
     TXN_NO_STOCKS,
     TXN_NOT_ENOUGH_STOCKS,
     TXN_OK,
+    TXN_STOCK_NOT_FOUND
 }TransactionStatus;
 
 typedef struct {
@@ -47,11 +48,11 @@ typedef struct {
 
 Trading trading_new();
 //Oldest stock selling implicit so not passing stock name
-void trading_sell(Trading *trading, uint32_t quantity, TransactionResult* result);
+Trading* trading_sell(Trading *trading, uint32_t quantity, TransactionResult* result);
 //Assuming price not under the control of the user
-void trading_buy(Trading *trading, char* shareName, uint32_t quantity, TransactionResult* result);
-uint32_t trading_lookup(Trading *trading, char* shareName);
+Trading* trading_buy(Trading *trading, char* shareName, uint32_t quantity, TransactionResult* result);
+Stock* trading_lookup(Trading *trading, char* shareName);
 //Assuming price not under the control of the user
-void trading_topup(Trading *trading, char* shareName, uint32_t quantity);
+Trading* trading_topup(Trading *trading, char* shareName, uint32_t quantity, TransactionResult* result);
 
 #endif

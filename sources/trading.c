@@ -11,7 +11,7 @@ Trading trading_new(){
     return trading;
 }
 
-void trading_sell(Trading *trading, uint32_t quantity, TransactionResult* result){
+Trading* trading_sell(Trading *trading, uint32_t quantity, TransactionResult* result){
     assert(trading != NULL && trading->stocks != NULL && trading->transactions != NULL);
     Queue* stocks = trading->stocks;
     if(stocks->count == 0){
@@ -33,6 +33,7 @@ void trading_sell(Trading *trading, uint32_t quantity, TransactionResult* result
         Transaction txn = {stock->shareName, stock->date, stock->price, quantity, TXN_SELL};
         slist_addnode_tail(trading->transactions, &txn);
     }
+    return trading;
 }
 
 Stock* q_lookup(Queue* q, char* shareName){
@@ -40,13 +41,13 @@ Stock* q_lookup(Queue* q, char* shareName){
     {
         int res = strcmp(((Stock*)q->data[i])->shareName, shareName);
         if(res == 0){
-            return q->data[i];
+            return (Stock*)q->data[i];
         }
     }
     return NULL;
     
 }
-void trading_buy(Trading *trading, char* shareName, uint32_t quantity, TransactionResult* result){
+Trading* trading_buy(Trading *trading, char* shareName, uint32_t quantity, TransactionResult* result){
     assert(trading != NULL && trading->stocks != NULL && trading->transactions != NULL);
     Queue* stocks = trading->stocks;
 
@@ -60,19 +61,25 @@ void trading_buy(Trading *trading, char* shareName, uint32_t quantity, Transacti
     //Assuming same date & price for simplicity
     Transaction txn = {shareName, "2020-12-22", 100.25, quantity, TXN_BUY};
     slist_addnode_tail(trading->transactions, &txn);
+    result->status = TXN_OK;
+    return trading;
 }
 
-uint32_t trading_lookup(Trading *trading, char* shareName){
+Stock* trading_lookup(Trading *trading, char* shareName){
     assert(trading != NULL && trading->stocks != NULL && trading->transactions != NULL);
-    return q_lookup(trading->stocks, shareName) != NULL;
+    return q_lookup(trading->stocks, shareName);
 }
 
-void trading_topup(Trading *trading, char* shareName, uint32_t quantity){
+Trading* trading_topup(Trading *trading, char* shareName, uint32_t quantity, TransactionResult* result){
     assert(trading != NULL && trading->stocks != NULL && trading->transactions != NULL);
     Stock* stock = q_lookup(trading->stocks, shareName);
     if(stock != NULL){
         stock->quantity += quantity;
-        Transaction txn = {shareName, "2020-12-22", 100.25, quantity, TXN_TOPUP};
-        slist_addnode_tail(trading->transactions, &txn);
+        // Transaction txn = {shareName, "2020-12-22", 100.25, quantity, TXN_TOPUP};
+        // slist_addnode_tail(trading->transactions, &txn);
+        result->status = TXN_OK;
+    }else{
+        result->status = TXN_STOCK_NOT_FOUND;
     }
+    return trading;
 }
