@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include <assert.h>
 
 #include "slist.h"
@@ -54,8 +55,12 @@ SList *slist_addnode_tail(SList *list, SLIST_CONTENT_TYPE val)
         list->head = list->tail = node;
     }
     list->length += 1;
-    assert((list->length == 1 && list->head == list->tail) ||
-           (list->length > 1 && list->head != list->tail));
+    printf(">>>%d<<<", list->length);
+    if(list->head == list->tail){
+        printf("yes");
+    }
+    // assert((list->length == 1 && list->head == list->tail) ||
+    //        (list->length > 1 && list->head != list->tail));
     return list;
 }
 

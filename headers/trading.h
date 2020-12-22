@@ -41,7 +41,7 @@ typedef struct{
 }Transaction;
 
 typedef struct {
-    SList* transactions;
+    Transaction transactions[100];
     Queue* stocks;
 }Trading;
 

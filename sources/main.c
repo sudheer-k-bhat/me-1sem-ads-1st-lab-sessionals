@@ -22,8 +22,11 @@ void test_sell(){
     TransactionResult result;
     trading_sell(trd, 100, &result);
     assert(result.status == TXN_NO_STOCKS);
-    trading_buy(trd, "INFY", 100, &result);
-    trading_sell(trd, 100, &result);
+    trd = trading_buy(trd, "INFY", 100, &result);
+    trd = trading_buy(trd, "GOOGL", 10, &result);
+    trd = trading_sell(trd, 200, &result);
+    assert(result.status == TXN_NOT_ENOUGH_STOCKS);
+    trading_sell(trd, 5, &result);
     assert(result.status == TXN_OK);
 }
 
@@ -49,6 +52,6 @@ int main(){
     test_new();
     test_buy();
     test_sell();
-    test_topup();
+    // test_topup();
     return 0;
 }
