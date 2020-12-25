@@ -33,6 +33,7 @@ typedef struct
 
 // Public interfaces
 Queue queue_new(uint32_t size);
+Queue* queue_new_ptr(uint32_t size);
 QueueStatus queue_full(Queue *q);
 QueueStatus queue_empty(Queue *q);
 Queue *queue_add(Queue *q, QUEUE_CONTENT_TYPE ele, QueueResult *result); //aka push
