@@ -1,7 +1,7 @@
 #include <stdint.h>
 
 #ifndef SLIST_CONTENT_TYPE
-#define SLIST_CONTENT_TYPE int32_t
+#define SLIST_CONTENT_TYPE void*
 #endif
 
 typedef struct _node_ Node;
@@ -20,6 +20,8 @@ struct _slist_
 };
 
 SList slist_new();
+
+SList* slist_new_ptr();
 
 //No modifications are neeed, so using `const`
 //not using `stdbool` bcoz not supported across compilers & platforms.

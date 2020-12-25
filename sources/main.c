@@ -30,6 +30,7 @@ void test_sell(){
     Trading* trd = &trading;
     TransactionResult result;
     trading_sell(trd, 100, &result);
+    // trading_to_string(trd);
     assert(result.status == TXN_NO_STOCKS);
 }
 
@@ -42,6 +43,7 @@ void test_sell2(){
     trd = trading_buy(trd, sdsnew("GOOGL"), 10, &result);
     trd = trading_buy(trd, sdsnew("AMZN"), 5, &result);
     trd = trading_sell(trd, 105, &result);
+    // trading_to_string(trd);
     assert(result.status == TXN_NOT_ENOUGH_STOCKS && sdscmp(result.shareName, infy_share_name) == 0);
 }
 
@@ -55,6 +57,7 @@ void test_sell3(){
     trd = trading_buy(trd, sdsnew("AMZN"), 5, &result);
     int32_t sell_quantity = 10;
     trading_sell(trd, sell_quantity, &result);
+    // trading_to_string(trd);
     assert(result.status == TXN_OK && sdscmp(result.shareName, infy_share_name) == 0 && result.quantity == sell_quantity);
 }
 
@@ -66,6 +69,7 @@ void test_lookup(){
     trd = trading_buy(trd, infy_share_name, 100, &result);
     trd = trading_buy(trd, sdsnew("GOOGL"), 10, &result);
     trd = trading_buy(trd, sdsnew("AMZN"), 5, &result);
+    // trading_to_string(trd);
     assert(trading_lookup(trd, infy_share_name) != NULL);
     assert(trading_lookup(trd, sdsnew("TSLA")) == NULL);
 }
@@ -81,6 +85,7 @@ void test_topup(){
     trading_topup(trd, infy_share_name, 20, &result);
     assert(result.status == TXN_OK);
     trading_topup(trd, sdsnew("TSLA"), 20, &result);
+    trading_to_string(trd);
     assert(result.status == TXN_STOCK_NOT_FOUND);
 }
 

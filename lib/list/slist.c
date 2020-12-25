@@ -10,6 +10,14 @@ SList slist_new()
     return slist;
 }
 
+SList* slist_new_ptr(){
+    SList* slist = malloc(sizeof(SList));
+    slist->head = NULL;
+    slist->length = 0;
+    slist->tail = NULL;
+    return slist;
+}
+
 int32_t slist_length(const SList *list)
 {
     assert(list != NULL);
@@ -55,12 +63,8 @@ SList *slist_addnode_tail(SList *list, SLIST_CONTENT_TYPE val)
         list->head = list->tail = node;
     }
     list->length += 1;
-    printf(">>>%d<<<", list->length);
-    if(list->head == list->tail){
-        printf("yes");
-    }
-    // assert((list->length == 1 && list->head == list->tail) ||
-    //        (list->length > 1 && list->head != list->tail));
+    assert((list->length == 1 && list->head == list->tail) ||
+           (list->length > 1 && list->head != list->tail));
     return list;
 }
 

@@ -8,13 +8,43 @@
 
 uint32_t txn_idx = 0;
 
+static Stock *q_lookup(Queue *q, sds shareName)
+{
+    for (size_t i = 0; i < q->count; i++)
+    {
+        if (sdscmp(((Stock *)q->data[i])->shareName, shareName) == 0)
+        {
+            return (Stock *)q->data[i];
+        }
+    }
+    return NULL;
+}
+
+static Stock* _new_stock(sds shareName, sds date, float price, uint32_t quantity){
+    Stock* stock = malloc(sizeof(Stock));
+    stock->date = sdsdup(date);
+    stock->price = price;
+    stock->quantity = quantity;
+    stock->shareName = sdsdup(shareName);
+    return stock;
+}
+
+static Transaction* _new_txn(sds shareName, sds date, float price, uint32_t quantity, TransactionType txn_type){
+    Transaction* txn = malloc(sizeof(Transaction));
+    txn->date = sdsdup(date);
+    txn->price = price;
+    txn->quantity = quantity;
+    txn->shareName = sdsdup(shareName);
+    txn->transaction_type = txn_type;
+    return txn;
+}
+
 Trading trading_new()
 {
     SList slist = slist_new();
-    Queue* queue = queue_new_ptr(MAX_COMPANY_TYPES);
-    Trading trading = {{0}, queue};
-    // trading.stocks = &queue;
-    // printf("%d, %d, %d, %d\n", trading.stocks->count, trading.stocks->front, trading.stocks->rear, trading.stocks->size);
+    Queue* stocks = queue_new_ptr(MAX_COMPANY_TYPES);
+    SList* transactions = slist_new_ptr();
+    Trading trading = {transactions, stocks};
     return trading;
 }
 
@@ -53,39 +83,18 @@ Trading *trading_sell(Trading *trading, uint32_t quantity, TransactionResult *re
             result->status = TXN_OK;
 
             //Assuming same date & price for simplicity
-            Transaction txn = {stock->shareName, stock->date, stock->price, quantity, TXN_SELL};
-            trading->transactions[txn_idx++] = txn;
+            sds date = sdsnew("2020-12-22");
+            Transaction* txn = _new_txn(result->shareName, date, stock->price, quantity, TXN_SELL);
+            slist_addnode_tail(trading->transactions, txn);
         }
     }
     return trading;
-}
-
-static Stock *q_lookup(Queue *q, sds shareName)
-{
-    for (size_t i = 0; i < q->count; i++)
-    {
-        if (sdscmp(((Stock *)q->data[i])->shareName, shareName) == 0)
-        {
-            return (Stock *)q->data[i];
-        }
-    }
-    return NULL;
-}
-
-static Stock* _new_stock(sds shareName, sds date, float price, uint32_t quantity){
-    Stock* stock = malloc(sizeof(Stock));
-    stock->date = sdsdup(date);
-    stock->price = price;
-    stock->quantity = quantity;
-    stock->shareName = sdsdup(shareName);
-    return stock;
 }
 
 Trading *trading_buy(Trading *trading, sds shareName, uint32_t quantity, TransactionResult *result)
 {
     assert(trading != NULL && trading->stocks != NULL && trading->transactions != NULL);
     Queue *stocks = trading->stocks;
-    // printf("%d, %d, %d, %d\n", stocks->count, stocks->front, stocks->rear, stocks->size);
 
     QueueResult q_result;
     if (stocks->count == MAX_COMPANY_TYPES)
@@ -93,13 +102,13 @@ Trading *trading_buy(Trading *trading, sds shareName, uint32_t quantity, Transac
         queue_delete(stocks, &q_result);
     }
 
-    Stock* stock = _new_stock(shareName, sdsnew("2020-12-22"), 100.25, quantity);
+    sds date = sdsnew("2020-12-22");
+    float price = 100.25;
+    Stock* stock = _new_stock(shareName, date, price, quantity);
     queue_add(stocks, stock, &q_result);
-    // printf("\n%d", queue_length(stocks));
-    // printf("Stock{%s, %f, %d, %s}\n", stock->date, stock->price, stock->quantity, stock->shareName);
     //Assuming same date & price for simplicity
-    Transaction txn = {sdsnew(shareName), "2020-12-22", 100.25, quantity, TXN_BUY};
-    trading->transactions[txn_idx++] = txn;
+    Transaction* txn = _new_txn(shareName, date, price, quantity, TXN_BUY);
+    slist_addnode_tail(trading->transactions, txn);
     // printf("Transaction{%s, %f, %d, %s, %d}", txn.date, txn.price, txn.quantity, txn.shareName, txn.transaction_type);
 
     result->status = TXN_OK;
@@ -119,8 +128,9 @@ Trading *trading_topup(Trading *trading, sds shareName, uint32_t quantity, Trans
     if (stock != NULL)
     {
         stock->quantity += quantity;
-        // Transaction txn = {shareName, "2020-12-22", 100.25, quantity, TXN_TOPUP};
-        // trading->transactions[txn_idx++] = txn;
+        sds date = sdsnew("2020-12-22");
+        Transaction* txn = _new_txn(shareName, date, stock->price, quantity, TXN_TOPUP);
+        slist_addnode_tail(trading->transactions, txn);
         result->status = TXN_OK;
     }
     else
@@ -130,18 +140,21 @@ Trading *trading_topup(Trading *trading, sds shareName, uint32_t quantity, Trans
     return trading;
 }
 
+void print_txn(Transaction* txn){
+    printf("Transaction{%s, %f, %d, %s, %d}\n", txn->date, txn->price, txn->quantity, txn->shareName, txn->transaction_type);
+}
+
 void trading_to_string(Trading* trading){
     assert(trading != NULL && trading->stocks != NULL && trading->transactions != NULL);
     Queue* q = trading->stocks;
-    // printf(">>%d", queue_length(q));
     for (uint32_t i = 0; i < queue_length(q); i++)
     {
         Stock* stock = (Stock*)q->data[i];
         printf("Stock{%s, %f, %d, %s}\n", stock->date, stock->price, stock->quantity, stock->shareName);
     }
-    // for (size_t i = 0; i <= txn_idx; i++)
-    // {
-    //     Transaction txn = trading->transactions[i];
-    //     printf("Transaction{%s, %f, %d, %s, %d}", txn.date, txn.price, txn.quantity, txn.shareName, txn.transaction_type);
-    // }
+    SList* list = trading->transactions;
+    Node* cur = list->head;
+    for(cur = list->head; cur != NULL; cur = cur->next){
+        print_txn((Transaction*)cur->data);
+    }
 }
