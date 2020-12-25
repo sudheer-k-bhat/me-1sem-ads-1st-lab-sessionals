@@ -9,6 +9,7 @@ void test_new(){
     assert(trading.stocks != NULL && trading.transactions != NULL);
 }
 
+//TODO free sharenames
 void test_buy(){
     Trading trading = trading_new();
     Trading* trd = &trading;
@@ -23,6 +24,7 @@ void test_buy(){
     // trading_to_string(trd);
     Queue *stocks = trd->stocks;
     assert(stocks->count == 3);
+    trading_free(trd);
 }
 
 void test_sell(){
@@ -32,6 +34,7 @@ void test_sell(){
     trading_sell(trd, 100, &result);
     // trading_to_string(trd);
     assert(result.status == TXN_NO_STOCKS);
+    trading_free(trd);
 }
 
 void test_sell2(){
@@ -45,6 +48,7 @@ void test_sell2(){
     trd = trading_sell(trd, 105, &result);
     // trading_to_string(trd);
     assert(result.status == TXN_NOT_ENOUGH_STOCKS && sdscmp(result.shareName, infy_share_name) == 0);
+    trading_free(trd);
 }
 
 void test_sell3(){
@@ -59,6 +63,7 @@ void test_sell3(){
     trading_sell(trd, sell_quantity, &result);
     // trading_to_string(trd);
     assert(result.status == TXN_OK && sdscmp(result.shareName, infy_share_name) == 0 && result.quantity == sell_quantity);
+    trading_free(trd);
 }
 
 void test_lookup(){
@@ -72,6 +77,7 @@ void test_lookup(){
     // trading_to_string(trd);
     assert(trading_lookup(trd, infy_share_name) != NULL);
     assert(trading_lookup(trd, sdsnew("TSLA")) == NULL);
+    trading_free(trd);
 }
 
 void test_topup(){
@@ -85,8 +91,9 @@ void test_topup(){
     trading_topup(trd, infy_share_name, 20, &result);
     assert(result.status == TXN_OK);
     trading_topup(trd, sdsnew("TSLA"), 20, &result);
-    trading_to_string(trd);
+    // trading_to_string(trd);
     assert(result.status == TXN_STOCK_NOT_FOUND);
+    trading_free(trd);
 }
 
 int main(){

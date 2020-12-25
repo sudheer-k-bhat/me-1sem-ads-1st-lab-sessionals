@@ -49,6 +49,7 @@ typedef struct {
 
 
 Trading trading_new();
+void trading_free(Trading* trading);
 //Oldest stock selling implicit so not passing stock name
 Trading* trading_sell(Trading *trading, uint32_t quantity, TransactionResult* result);
 //Assuming price not under the control of the user

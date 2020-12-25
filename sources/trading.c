@@ -48,6 +48,12 @@ Trading trading_new()
     return trading;
 }
 
+void trading_free(Trading* trading){
+    assert(trading != NULL && trading->stocks != NULL && trading->transactions != NULL);
+    free(trading->stocks);
+    //TODO free transactions
+}
+
 Trading *trading_sell(Trading *trading, uint32_t quantity, TransactionResult *result)
 {
     assert(trading != NULL && trading->stocks != NULL && trading->transactions != NULL);
@@ -85,6 +91,7 @@ Trading *trading_sell(Trading *trading, uint32_t quantity, TransactionResult *re
             //Assuming same date & price for simplicity
             sds date = sdsnew("2020-12-22");
             Transaction* txn = _new_txn(result->shareName, date, stock->price, quantity, TXN_SELL);
+            sdsfree(date);
             slist_addnode_tail(trading->transactions, txn);
         }
     }
@@ -108,8 +115,8 @@ Trading *trading_buy(Trading *trading, sds shareName, uint32_t quantity, Transac
     queue_add(stocks, stock, &q_result);
     //Assuming same date & price for simplicity
     Transaction* txn = _new_txn(shareName, date, price, quantity, TXN_BUY);
+    sdsfree(date);
     slist_addnode_tail(trading->transactions, txn);
-    // printf("Transaction{%s, %f, %d, %s, %d}", txn.date, txn.price, txn.quantity, txn.shareName, txn.transaction_type);
 
     result->status = TXN_OK;
     return trading;
@@ -130,6 +137,7 @@ Trading *trading_topup(Trading *trading, sds shareName, uint32_t quantity, Trans
         stock->quantity += quantity;
         sds date = sdsnew("2020-12-22");
         Transaction* txn = _new_txn(shareName, date, stock->price, quantity, TXN_TOPUP);
+        sdsfree(date);
         slist_addnode_tail(trading->transactions, txn);
         result->status = TXN_OK;
     }
